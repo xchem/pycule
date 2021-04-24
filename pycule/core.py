@@ -70,7 +70,7 @@ class MCuleWrapper:
         """
         data = {"query": {"type": "exact", "queries": [smiles]}}
         response = requests.post(
-            self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
         )
         return response
 
@@ -100,7 +100,7 @@ class MCuleWrapper:
             }
         }
         response = requests.post(
-            self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
         )
         return response
 
@@ -119,7 +119,7 @@ class MCuleWrapper:
         """
         data = {"query": {"type": "sss", "query": smiles, "limit": limit}}
         response = requests.post(
-            self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
         )
         return response
 
@@ -156,7 +156,7 @@ class MCuleWrapper:
             "individual": individual,
         }
         response = requests.post(
-            self.routes.pricing_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.pricing_url, headers=self.headers, data=json.dumps(data), cookies={}
         )
 
         return response
@@ -195,7 +195,7 @@ class MCuleWrapper:
             "individual": individual,
         }
         response = requests.post(
-            self.routes.pricing_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.pricing_url, headers=self.headers, data=json.dumps(data), cookies={}
         )
 
         return response
@@ -251,7 +251,10 @@ class MCuleWrapper:
             "customer_name": customer_name,
         }
         response = requests.post(
-            self.routes.quoterequest_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.quoterequest_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
 
         return response
@@ -306,7 +309,10 @@ class MCuleWrapper:
             "customer_name": customer_name,
         }
         response = requests.post(
-            self.routes.quoterequest_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.quoterequest_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
 
         return response
@@ -328,7 +334,7 @@ class MCuleWrapper:
         """
 
         response = requests.get(
-            self.routes.quotestatus_url.format(quote_id=quote_id), headers=self.headers
+            url=self.routes.quotestatus_url.format(quote_id=quote_id), headers=self.headers
         )
 
         return response
@@ -349,7 +355,7 @@ class MCuleWrapper:
             dict: dictionary containing the search response
         """
         response = requests.get(
-            self.routes.detailedquote_url.format(quote_id=quote_id), headers=self.headers
+            url=self.routes.detailedquote_url.format(quote_id=quote_id), headers=self.headers
         )
 
         return response
