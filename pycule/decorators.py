@@ -15,6 +15,7 @@ LAST_REQUEST_TIME = int(time.time()) - 86400  # added a one day offset
 REQUEST_COUNT = 0
 
 
+
 class RequestsPerMinuteExceeded(RuntimeError):
     """Exception raised when too many requests are sent in a minute."""
 
