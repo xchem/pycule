@@ -6,7 +6,7 @@ import threading
 from typing import Optional, Callable
 from functools import wraps, partial
 
-from callbacks import default_on_success
+from .callbacks import default_on_success
 
 LOGGER = logging.getLogger("mcule:decorators")
 MAXIMUM_REQUESTS_PER_MINUTE = 1e5
