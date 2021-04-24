@@ -1,8 +1,6 @@
 name: Release to PyPI
 
-on:
-  release:
-    types: [release]
+on: push
 
 jobs:
   release:

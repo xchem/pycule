@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 from typing import Optional
 
-
 class MCuleRoutes:
     """
     Routes for MCule API service.
