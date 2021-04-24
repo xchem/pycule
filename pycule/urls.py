@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 from typing import Optional
 
+
 class MCuleRoutes:
     """
     Routes for MCule API service.
@@ -24,9 +25,10 @@ class MCuleRoutes:
         """Update all the routes."""
         self.api_url = "{}/{}".format(self._base_url, "api/v1")
         self.search_url = "{}/{}/".format(self.api_url, "searches")
-        self.pricing_url = "{}/{}".format(self.api_url, "pricing")
-        self.quoterequest_url = "{}/{}".format(self.api_url, "iquote-queries")
-        self.individualquoterequest_url = "{}/{}/{}".format(self.api_url, "iquotes", "{quote_id}")
+        self.pricing_url = "{}/{}/".format(self.api_url, "pricing")
+        self.quoterequest_url = "{}/{}/".format(self.api_url, "iquote-queries")
+        self.quotestatus_url = "{}/{}/{}/".format(self.api_url, "iquote-queries", "{quote_id}")
+        self.detailedquote_url = "{}/{}/{}/".format(self.api_url, "iquotes", "{quote_id}")
 
     @property
     def base_url(self) -> str:
