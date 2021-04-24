@@ -1,6 +1,6 @@
 PyCule
 ==============================
 [//]: # (Badges)
-[![Release to PyPI](https://github.com/Waztom/pcule/workflows/Release%20to%20PyPI/badge.svg)
+[![PyPI version](https://badge.fury.io/py/PyCule.svg)](https://badge.fury.io/py/PyCule)
 
 Wrapper to access the MCule API
