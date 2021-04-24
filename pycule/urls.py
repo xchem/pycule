@@ -29,6 +29,9 @@ class MCuleRoutes:
         self.quoterequest_url = "{}/{}/".format(self.api_url, "iquote-queries")
         self.quotestatus_url = "{}/{}/{}/".format(self.api_url, "iquote-queries", "{quote_id}")
         self.detailedquote_url = "{}/{}/{}/".format(self.api_url, "iquotes", "{quote_id}")
+        self.downloadquote_url = "{}/{}/{}/{}{}/".format(
+            self.api_url, "iquotes", "{quote_id}", "download-", "{file_type}"
+        )
 
     @property
     def base_url(self) -> str:

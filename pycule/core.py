@@ -359,3 +359,27 @@ class MCuleWrapper:
         )
 
         return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def excel_quote(
+        self,
+        quote_id: int,
+        file_type: str = "excel",
+    ) -> requests.models.Response:
+        """
+        Retrieve excel file (.xlsx) of quote for a quote request
+
+        Args:
+            id (int): id of quote request from quote_request_multi or
+                      quote_request_single
+            file_type (str): can be set to either "pdf" or "excel"
+        Returns:
+            file: returns either a .pdf or .xlsx file
+        """
+        response = requests.get(
+            url=self.routes.downloadquote_url.format(quote_id=quote_id, file_type=file_type),
+            headers=self.headers,
+        )
+
+        return response
