@@ -9,11 +9,11 @@ from functools import wraps, partial
 from .callbacks import default_on_success
 
 LOGGER = logging.getLogger("mcule:decorators")
-MAXIMUM_REQUESTS_PER_MINUTE = 1e5
+MAXIMUM_REQUESTS_PER_MINUTE = 100
+MAXIMUM_REQUESTS_PER_DAY = 1000
 MININUM_TIMEOUT_BETWEEN_REQUESTS = 1e-5  # expressed in seconds
 LAST_REQUEST_TIME = int(time.time()) - 86400  # added a one day offset
 REQUEST_COUNT = 0
-
 
 
 class RequestsPerMinuteExceeded(RuntimeError):
@@ -109,8 +109,23 @@ def response_handling(
 
         if response.status_code == success_status_code:
             return on_success(response)
+        elif response.status_code == 400:
+            LOGGER.error("Bad request - probably a validation error")
+            LOGGER.debug(response.text)
         elif response.status_code == 401:
-            LOGGER.error("There is probably something wrong with your api key. " "Please check.")
+            LOGGER.error("Unauthorised - check your API key")
+            LOGGER.debug(response.text)
+        elif response.status_code == 403:
+            LOGGER.error("Permission denied")
+            LOGGER.debug(response.text)
+        elif response.status_code == 404:
+            LOGGER.error("Not found")
+            LOGGER.debug(response.text)
+        elif response.status_code == 429:
+            LOGGER.error("Too many requests made")
+            LOGGER.debug(response.text)
+        elif response.status_code == 500:
+            LOGGER.error("Server error")
             LOGGER.debug(response.text)
         else:
             LOGGER.error("Unexpected error.")
