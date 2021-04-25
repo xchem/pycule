@@ -127,10 +127,6 @@ def response_handling(
         elif response.status_code == 500:
             LOGGER.error("Server error")
             LOGGER.debug(response.text)
-        else:
-            LOGGER.error("Unexpected error.")
-            LOGGER.error(response.text)
-        response_dict = response.json()
         return {"response": response_dict}
 
     return _wrapper
