@@ -6,8 +6,8 @@ import requests
 import json
 from typing import Optional
 
-from .urls import MCuleRoutes
-from .callbacks import search_result_on_success, default_on_success
+from .urls import MCuleRoutes, UltimateMCuleRoutes
+from .callbacks import default_on_success
 from .decorators import mcule_api_limits, response_handling
 
 LOGGER = logging.getLogger("mcule:core")
@@ -15,7 +15,7 @@ LOGGER = logging.getLogger("mcule:core")
 
 class MCuleWrapper:
     """
-    Python wrapper for MCule wrapper to access the API requests.
+    Python wrapper for MCule API wrapper to access the API requests.
     """
 
     def __init__(
@@ -37,6 +37,444 @@ class MCuleWrapper:
         self.logger = logger if logger else LOGGER
         self.headers = self._construct_headers()
         self.routes = MCuleRoutes(base_url)
+
+    def set_base_url(self, base_url: str) -> None:
+        """
+        Set base url for the MCule service.
+        Args:
+            base_url (str): base url for the service to set.
+        """
+        self.routes.base_url = base_url
+
+    def _construct_headers(self) -> dict:
+        """
+        Construct header, required for all requests.
+        Returns:
+            dict: dictionary containing the "Content-Type" and the
+                "Authorization".
+        """
+        return {"Content-Type": "application/json", "Authorization": self._authorisation_token}
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def databasefiles(self) -> requests.models.Response:
+        """
+        Returns publicly available Mcule database files and URLs
+
+        Returns:
+            dict: dictionary containing the search response
+        """
+        response = requests.post(url=self.routes.database_url, headers=self.headers, cookies={})
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def compounddetails(self, mcule_id: str) -> requests.models.Response:
+        """
+        Gets compound details from Mcule
+
+        Args:
+            mcule_id (str): Mcule ID of compound eg.
+        Returns:
+            dict: dictionary containing the search response
+        """
+        response = requests.post(
+            url=self.routes.compounddetails_url.format(mcule_id=mcule_id),
+            headers=self.headers,
+            cookies={},
+        )
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def inchikeylookup(self, inchi_key: str) -> requests.models.Response:
+        """
+        Searches Mcule using InChiKey
+
+        Args:
+            inchi_key (str): InChiKey of compound
+        Returns:
+            dict: dictionary containing the search response
+        """
+        response = requests.post(
+            url=self.routes.inchikeylookup_url.format(inchi_key), headers=self.headers, cookies={}
+        )
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def singlequerysearch(self, query: str) -> requests.models.Response:
+        """
+        Searches Mcule using an mcule ID, SMILES, InChI or InChIKey identifier.
+        Retruns mcule id, smiles and URL for a compound
+
+        Args:
+            query (str): An mcule ID, SMILES, InChI or InChIKey identifier
+
+        Returns:
+            dict: dictionary containing the search response
+        """
+
+        response = requests.post(
+            url=self.routes.singlequery_url.format(query),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    # Up to here!!!!!!!
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def compoundavailability(self, mcule_id: str) -> requests.models.Response:
+        """
+        Searches Mcule for compound availability
+
+        Args:
+            mcule_id (str): Mcule compound ID
+        Returns:
+            dict: dictionary containing the search response
+        """
+
+        response = requests.post(
+            url=self.routes.compoundavailability_url.format(mcule_id),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def compoundprices(self, mcule_id: str) -> requests.models.Response:
+        """
+        Get compound prices from Mcule
+
+        Args:
+            mcule_id (str): Mcule compound ID
+        Returns:
+            dict: dictionary containing the search response
+        """
+
+        response = requests.post(
+            url=self.routes.compoundprices_url.format(mcule_id),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def multiplequeriessearch(self, queries: list) -> requests.models.Response:
+        """
+        Exact search of MCule fro multiple queries
+
+        Args:
+            queries (list): list of mcule ID, SMILES, InChI or InChIKey identifiers
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {"queries": queries}
+        response = requests.post(
+            url=self.routes.multtiplequeries_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def multtiplequerieswithavailability(self, queries: list) -> requests.models.Response:
+        """
+        Exact search of MCule for multiple queries and availability
+
+        Args:
+            queries (list): list of mcule ID, SMILES, InChI or InChIKey identifiers
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {"queries": queries}
+        response = requests.post(
+            url=self.routes.multtiplequerieswithavailability_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def similaritysearch(self, query: str) -> requests.models.Response:
+        """
+        Similarity search of MCule for a compound
+
+        Args:
+            query (str): Mcule ID or SMILES
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {"query": query}
+        response = requests.post(
+            url=self.routes.similaritysearch_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def substructuresearch(self, query: str) -> requests.models.Response:
+        """
+        Substructure search of MCule for a compound
+
+        Args:
+            query (str): Mcule ID or SMILES
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {"query": query}
+        response = requests.post(
+            url=self.routes.substructuresearch_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def substructuresearch(self, query: str) -> requests.models.Response:
+        """
+        Substructure search of MCule for a compound
+
+        Args:
+            query (str): Mcule ID or SMILES
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {"query": query}
+        response = requests.post(
+            url=self.routes.substructuresearch_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def quoterequest(
+        self,
+        mcule_ids: list,
+        customer_first_name: str,
+        customer_last_name: str,
+        delivery_country: str,
+        amount: None,
+        min_amount: None,
+        target_volume: None,
+        extra_amount: None,
+        min_extra_amount: None,
+        customer_email: None,
+        delivery_time: None,
+        purity: None,
+        higher_amouts: None,
+        item_filters: None,
+    ) -> requests.models.Response:
+        """
+        Substructure search of MCule for a compound
+
+        Args:
+            Mandatory fields:
+            mcule_ids: List of mcule IDs of structures you want get a quote for.
+            customer_first_name: The customer's first name. It does not need to be specified if the user's first name is specified on the Edit profile page on mcule.com.
+            customer_last_name: The customer's last name. It does not need to be specified if the user's last name is specified on the Edit profile page on mcule.com.
+            delivery_country: ISO 3166-1 alpha-2 code of the delivery country.
+
+            Optional fields:
+
+            amount: Preferred amount per molecule (mg). (default: 1)
+            min_amount: Acceptable minimum amount (mg). (default: null)
+            target_volume: The target volume (in ml), in case of solution based amount.
+            target_cc: Target concentration (mM), in case of solution based amount.
+            extra_amount: In case of solution based amount calculation the preferred extra amount (in mg) can be specified here.
+            min_extra_amount: In case of solution based amount calculation the acceptable minimum extra amount (in mg) can be specified here.
+            customer_email: The customer's email address. By default it will be filled with the email address associated with the user making the API request.
+            delivery_time: Delivery time limit (working days). Door-to-door delivery time. Only offer molecules that are available within the specified number of working days. You can specify null if delivery time is not critical. (default: 21)
+            purity: Required minimum purity (%). (default: null)
+            higher_amounts: Set to true if you would like to get a quote for the compounds in the largest possible quantity in case they do not cost more than the specified amount. (default: false)
+            item_filters: Per query item filters. Currently it supports only supplier filtering. See example below.
+
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {
+            "mcule_ids": mcule_ids,
+            "customer_first_name": customer_first_name,
+            "customer_last_name": customer_last_name,
+            "delivery_country": delivery_country,
+            "amount": amount,
+            "min_amount": min_amount,
+            "target_volume": target_volume,
+            "extra_amount": extra_amount,
+            "min_extra_amount": min_extra_amount,
+            "customer_email": customer_email,
+            "delivery_time": delivery_time,
+            "purity": purity,
+            "higher_amouts": higher_amouts,
+            "item_filters": item_filters,
+        }
+        response = requests.post(
+            url=self.routes.quoterequest_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def quoterequeststatus(self, quote_id: str) -> requests.models.Response:
+        """
+        Since processing a quote request and generating suitable
+        quotes can take some time it is an asynchronous process.
+        You can query the status of a quote request by calling
+        the detail API endpoint of the quote request.
+        It is returned in the api_url field when you create
+        the quote request. You can also use the id field to
+        construct the url of the API call. You can check the
+        state field of the response whether the async quote
+        request processing is finished.
+
+         States:
+
+        10 -> Pending: The quote query is queued but the processing
+              has not started yet.
+        20 -> Running: The processing of the quote query is in
+              progress.
+        30 -> Done: The processing of the quote query is finished.
+              For one quote request query we might generate multiple
+              quotes (this is what we call a group) or it is also
+              possible that we could not generate any quotes for a
+              particular quote request. If there are quotes they will
+              appear under the group field where the quotes field
+              contains a list of the generated quotes and some basic
+              info about them. You can get detailed data of a
+              particular quote by calling the endpoint specified in
+              the api_url field.
+        40 -> Error: An error happened during the processing of the
+              quote query.
+
+
+        Args:
+            quote_id (str): Mcule quote ID
+        Returns:
+            dict: dictionary containing the search response
+        """
+
+        response = requests.post(
+            url=self.routes.quoterequeststatus_url.format(quote_id),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def detailedquote(self, quote_id: str) -> requests.models.Response:
+        """
+        Deatiled data re an individual quote
+
+        Args:
+            quote_id (str): Mcule quote ID
+        Returns:
+            dict: dictionary containing the search response
+        """
+        response = requests.post(
+            url=self.routes.detailedquote_url.format(quote_id),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def quotemissingstructures(self, quote_id: str) -> requests.models.Response:
+        """
+        Missing structures from quote along with reasons for exclusion
+
+        Args:
+            quote_id (str): Mcule quote ID
+        Returns:
+            dict: dictionary containing the search response
+        """
+        response = requests.post(
+            url=self.routes.quotemissingstructures_url.format(quote_id),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=201, on_success=default_on_success)
+    @mcule_api_limits
+    def downloadquotepdf(
+        self, quote_id: str, download_type: str = "download-pd"
+    ) -> requests.models.Response:
+        """
+        Download .pdf of quote
+
+        Args:
+            quote_id (str): Mcule quote ID
+            download_type: Can be either use 'download-pdf' or
+                          'download-excel'. If no download_type
+                           specified then 'donwload-pdf' used
+        Returns:
+            dict: dictionary containing the search response
+        """
+        response = requests.post(
+            url=self.downloadquote_url.format(quote_id, download_type),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+
+class UltimateMCuleWrapper:
+    """
+    Python wrapper for MCule Ultimate API wrapper to access the API requests.
+    """
+
+    def __init__(
+        self,
+        authorisation_token: str,
+        logger: Optional[logging.Logger] = None,
+        base_url: Optional[str] = None,
+    ):
+        """
+        MCuleWrapper constructor.
+        Args:
+            authorisation_token_key (str): an API token to access the service.
+            logger (logging.Logger, optional): a logger.
+                Defaults to None, a.k.a using a default logger.
+            base_url (str, optional): base url for the service. If not provided it will default to
+                the environment variable MCULE_BASE_URL or https://ultimateapp.mcule.com.
+        """
+        self._authorisation_token = authorisation_token
+        self.logger = logger if logger else LOGGER
+        self.headers = self._construct_headers()
+        self.routes = UltimateMCuleRoutes(base_url)
 
     def set_base_url(self, base_url: str) -> None:
         """
