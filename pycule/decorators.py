@@ -6,7 +6,7 @@ import threading
 from typing import Optional, Callable
 from functools import wraps, partial
 
-from .callbacks import default_on_success
+from callbacks import default_on_success
 
 LOGGER = logging.getLogger("mcule:decorators")
 MAXIMUM_REQUESTS_PER_MINUTE = 100
@@ -127,6 +127,6 @@ def response_handling(
         elif response.status_code == 500:
             LOGGER.error("Server error")
             LOGGER.debug(response.text)
-        return {"response": response_dict}
+        return {"response": response}
 
     return _wrapper

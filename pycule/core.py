@@ -6,9 +6,9 @@ import requests
 import json
 from typing import Optional
 
-from .urls import MCuleRoutes, UltimateMCuleRoutes
-from .callbacks import default_on_success
-from .decorators import mcule_api_limits, response_handling
+from urls import MCuleRoutes, UltimateMCuleRoutes
+from callbacks import default_on_success
+from decorators import mcule_api_limits, response_handling
 
 LOGGER = logging.getLogger("mcule:core")
 
@@ -31,7 +31,7 @@ class MCuleWrapper:
             logger (logging.Logger, optional): a logger.
                 Defaults to None, a.k.a using a default logger.
             base_url (str, optional): base url for the service. If not provided it will default to
-                the environment variable MCULE_BASE_URL or https://ultimateapp.mcule.com.
+                the environment variable MCULE_BASE_URL or https://mcule.com
         """
         self._authorisation_token = authorisation_token
         self.logger = logger if logger else LOGGER
@@ -51,11 +51,14 @@ class MCuleWrapper:
         Construct header, required for all requests.
         Returns:
             dict: dictionary containing the "Content-Type" and the
-                "Authorization".
+                  "Authorization".
         """
-        return {"Content-Type": "application/json", "Authorization": self._authorisation_token}
+        return {
+            "Content-Type": "application/json",
+            "Authorization": "Token {}".format(self._authorisation_token),
+        }
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def databasefiles(self) -> requests.models.Response:
         """
@@ -64,28 +67,28 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.post(url=self.routes.database_url, headers=self.headers, cookies={})
+        response = requests.get(url=self.routes.database_url, headers=self.headers, cookies={})
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def compounddetails(self, mcule_id: str) -> requests.models.Response:
         """
         Gets compound details from Mcule
 
         Args:
-            mcule_id (str): Mcule ID of compound eg.
+            mcule_id (str): Mcule ID of compound
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.post(
+        response = requests.get(
             url=self.routes.compounddetails_url.format(mcule_id=mcule_id),
             headers=self.headers,
             cookies={},
         )
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def inchikeylookup(self, inchi_key: str) -> requests.models.Response:
         """
@@ -96,12 +99,15 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.post(
-            url=self.routes.inchikeylookup_url.format(inchi_key), headers=self.headers, cookies={}
+        print(self.routes.inchikeylookup_url.format(inchi_key=inchi_key))
+        response = requests.get(
+            url=self.routes.inchikeylookup_url.format(inchi_key=inchi_key),
+            headers=self.headers,
+            cookies={},
         )
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def singlequerysearch(self, query: str) -> requests.models.Response:
         """
@@ -115,16 +121,15 @@ class MCuleWrapper:
             dict: dictionary containing the search response
         """
 
-        response = requests.post(
-            url=self.routes.singlequery_url.format(query),
+        response = requests.get(
+            url=self.routes.singlequery_url.format(query=query),
             headers=self.headers,
             cookies={},
         )
 
         return response
 
-    # Up to here!!!!!!!
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def compoundavailability(self, mcule_id: str) -> requests.models.Response:
         """
@@ -136,15 +141,15 @@ class MCuleWrapper:
             dict: dictionary containing the search response
         """
 
-        response = requests.post(
-            url=self.routes.compoundavailability_url.format(mcule_id),
+        response = requests.get(
+            url=self.routes.compoundavailability_url.format(mcule_id=mcule_id),
             headers=self.headers,
             cookies={},
         )
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def compoundprices(self, mcule_id: str) -> requests.models.Response:
         """
@@ -156,15 +161,15 @@ class MCuleWrapper:
             dict: dictionary containing the search response
         """
 
-        response = requests.post(
-            url=self.routes.compoundprices_url.format(mcule_id),
+        response = requests.get(
+            url=self.routes.compoundprices_url.format(mcule_id=mcule_id),
             headers=self.headers,
             cookies={},
         )
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def multiplequeriessearch(self, queries: list) -> requests.models.Response:
         """
@@ -177,7 +182,7 @@ class MCuleWrapper:
         """
         data = {"queries": queries}
         response = requests.post(
-            url=self.routes.multtiplequeries_url,
+            url=self.routes.multiplequeries_url,
             headers=self.headers,
             data=json.dumps(data),
             cookies={},
@@ -185,9 +190,9 @@ class MCuleWrapper:
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
-    def multtiplequerieswithavailability(self, queries: list) -> requests.models.Response:
+    def multiplequerieswithavailability(self, queries: list) -> requests.models.Response:
         """
         Exact search of MCule for multiple queries and availability
 
@@ -198,7 +203,7 @@ class MCuleWrapper:
         """
         data = {"queries": queries}
         response = requests.post(
-            url=self.routes.multtiplequerieswithavailability_url,
+            url=self.routes.multiplequerieswithavailability_url,
             headers=self.headers,
             data=json.dumps(data),
             cookies={},
@@ -206,7 +211,7 @@ class MCuleWrapper:
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def similaritysearch(self, query: str) -> requests.models.Response:
         """
@@ -227,7 +232,7 @@ class MCuleWrapper:
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def substructuresearch(self, query: str) -> requests.models.Response:
         """
@@ -248,28 +253,9 @@ class MCuleWrapper:
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
-    @mcule_api_limits
-    def substructuresearch(self, query: str) -> requests.models.Response:
-        """
-        Substructure search of MCule for a compound
-
-        Args:
-            query (str): Mcule ID or SMILES
-        Returns:
-            dict: dictionary containing the search response
-        """
-        data = {"query": query}
-        response = requests.post(
-            url=self.routes.substructuresearch_url,
-            headers=self.headers,
-            data=json.dumps(data),
-            cookies={},
-        )
-
-        return response
-
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    # Chcked all is working and good up unil here - getting a 400 validation error...
+    # for quote request
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def quoterequest(
         self,
@@ -277,16 +263,21 @@ class MCuleWrapper:
         customer_first_name: str,
         customer_last_name: str,
         delivery_country: str,
-        amount: None,
-        min_amount: None,
-        target_volume: None,
-        extra_amount: None,
-        min_extra_amount: None,
-        customer_email: None,
-        delivery_time: None,
-        purity: None,
-        higher_amouts: None,
-        item_filters: None,
+        amount: int = 1,
+        min_amount: int = None,
+        target_volume: int = None,
+        target_cc: int = None,
+        extra_amount: int = None,
+        min_extra_amount: int = None,
+        customer_email: str = None,
+        delivery_time: int = None,
+        purity: int = None,
+        higher_amouts: int = None,
+        item_filters: dict = None,
+        keep_original_salt_form: bool = False,
+        keep_original_tautomer_form: bool = False,
+        keep_original_stereo_form: bool = False,
+        deliver_multiple_salt_forms: bool = False,
     ) -> requests.models.Response:
         """
         Substructure search of MCule for a compound
@@ -297,6 +288,7 @@ class MCuleWrapper:
             customer_first_name: The customer's first name. It does not need to be specified if the user's first name is specified on the Edit profile page on mcule.com.
             customer_last_name: The customer's last name. It does not need to be specified if the user's last name is specified on the Edit profile page on mcule.com.
             delivery_country: ISO 3166-1 alpha-2 code of the delivery country.
+            amount: The amount or target concentration-volume pair (target_volume and target_cc) need to be specified.
 
             Optional fields:
 
@@ -312,6 +304,14 @@ class MCuleWrapper:
             higher_amounts: Set to true if you would like to get a quote for the compounds in the largest possible quantity in case they do not cost more than the specified amount. (default: false)
             item_filters: Per query item filters. Currently it supports only supplier filtering. See example below.
 
+            Advanced optional fields:
+
+            keep_original_salt_form: If false (by default), allow Mcule to deliver an alternative salt form if the original is not available. (default: false)
+            keep_original_tautomer_form: If false (by default), allow Mcule to deliver compounds drawn in alternative tautomer forms. Alternative tautomer forms are perceived by the system based on IUPAC InChI identifiers. (default: false)
+            keep_original_stereo_form: If false (by default), allow Mcule to deliver compounds drawn in alternative stereochemical forms. (default: false)
+            deliver_multiple_salt_forms: Deliver multiple salt forms or tautomers of the same compound. If false and the input contains duplicates, only a single salt form / tautomer will be kept (only effective when alternative salt or tautomer forms are allowed). (default: false)
+
+
         Returns:
             dict: dictionary containing the search response
         """
@@ -323,6 +323,7 @@ class MCuleWrapper:
             "amount": amount,
             "min_amount": min_amount,
             "target_volume": target_volume,
+            "target_cc": target_cc,
             "extra_amount": extra_amount,
             "min_extra_amount": min_extra_amount,
             "customer_email": customer_email,
@@ -330,6 +331,10 @@ class MCuleWrapper:
             "purity": purity,
             "higher_amouts": higher_amouts,
             "item_filters": item_filters,
+            "keep_original_salt_form": keep_original_salt_form,
+            "keep_original_tautomer_form": keep_original_tautomer_form,
+            "keep_original_stereo_form": keep_original_stereo_form,
+            "deliver_multiple_salt_forms": deliver_multiple_salt_forms,
         }
         response = requests.post(
             url=self.routes.quoterequest_url,
@@ -340,7 +345,7 @@ class MCuleWrapper:
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def quoterequeststatus(self, quote_id: str) -> requests.models.Response:
         """
@@ -380,15 +385,15 @@ class MCuleWrapper:
             dict: dictionary containing the search response
         """
 
-        response = requests.post(
-            url=self.routes.quoterequeststatus_url.format(quote_id),
+        response = requests.get(
+            url=self.routes.quoterequeststatus_url.format(quote_id=quote_id),
             headers=self.headers,
             cookies={},
         )
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def detailedquote(self, quote_id: str) -> requests.models.Response:
         """
@@ -399,15 +404,15 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.post(
-            url=self.routes.detailedquote_url.format(quote_id),
+        response = requests.get(
+            url=self.routes.detailedquote_url.format(quote_id=quote_id),
             headers=self.headers,
             cookies={},
         )
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def quotemissingstructures(self, quote_id: str) -> requests.models.Response:
         """
@@ -418,15 +423,15 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.post(
-            url=self.routes.quotemissingstructures_url.format(quote_id),
+        response = requests.get(
+            url=self.routes.quotemissingstructures_url.format(quote_id=quote_id),
             headers=self.headers,
             cookies={},
         )
 
         return response
 
-    @response_handling(success_status_code=201, on_success=default_on_success)
+    @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
     def downloadquotepdf(
         self, quote_id: str, download_type: str = "download-pd"
@@ -442,8 +447,8 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.post(
-            url=self.downloadquote_url.format(quote_id, download_type),
+        response = requests.get(
+            url=self.downloadquote_url.format(quote_id=quote_id, download_type=download_type),
             headers=self.headers,
             cookies={},
         )

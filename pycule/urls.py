@@ -22,33 +22,33 @@ class MCuleRoutes:
     def _update_routes(self) -> None:
         """Update all the routes."""
         self.api_url = "{}/{}".format(self._base_url, "api/v1")
-        self.database_url = "{}/{}/".format(self.api_url, "database-files")
-        self.compounddetails_url = "{}/{}/{}/".format(self.api_url, "compound", "{mcule_id}")
-        self.inchikeylookup_url = "{}/{}/{}/".format(self.api_url, "lookup", "{inchi_key}")
-        self.singlequery_url = "{}/{}/{}/{}/{}".format(
-            self.api_url, "search", "lookup", "?query=", "{your_query}"
+        self.database_url = "{}/{}".format(self.api_url, "database-files")
+        self.compounddetails_url = "{}/{}/{}".format(self.api_url, "compound", "{mcule_id}")
+        self.inchikeylookup_url = "{}/{}/{}".format(self.api_url, "lookup/inchikey", "{inchi_key}")
+        self.singlequery_url = "{}/{}/{}/{}{}".format(
+            self.api_url, "search", "lookup", "?query=", "{query}"
         )
-        self.compoundavailability_url = "{}/{}/{}/{}/".format(
+        self.compoundavailability_url = "{}/{}/{}/{}".format(
             self.api_url, "compound", "{mcule_id}", "availability"
         )
-        self.compoundprices_url = "{}/{}/{}/{}/".format(
+        self.compoundprices_url = "{}/{}/{}/{}".format(
             self.api_url, "compound", "{mcule_id}", "prices"
         )
-        self.multtiplequeries_url = "{}/{}/{}/".format(self.api_url, "search", "exact")
-        self.multtiplequerieswithavailability_url = "{}/{}/{}/{}/".format(
+        self.multiplequeries_url = "{}/{}/{}/".format(self.api_url, "search", "exact")
+        self.multiplequerieswithavailability_url = "{}/{}/{}/{}/".format(
             self.api_url, "search", "exact", "availability"
         )
         self.similaritysearch_url = "{}/{}/{}/".format(self.api_url, "search", "sim")
         self.substructuresearch_url = "{}/{}/{}/".format(self.api_url, "search", "sss")
         self.quoterequest_url = "{}/{}/".format(self.api_url, "iquote-queries")
-        self.quoterequeststatus_url = "{}/{}/{}/".format(
+        self.quoterequeststatus_url = "{}/{}/{}".format(
             self.api_url, "iquote-queries", "{quote_id}"
         )
-        self.detailedquote_url = "{}/{}/{}/".format(self.api_url, "iquotes", "{quote_id}")
-        self.quotemissingstructures_url = "{}/{}/{}/{}/".format(
+        self.detailedquote_url = "{}/{}/{}".format(self.api_url, "iquotes", "{quote_id}")
+        self.quotemissingstructures_url = "{}/{}/{}/{}".format(
             self.api_url, "iquotes", "{quote_id}", "missing"
         )
-        self.downloadquote_url = "{}/{}/{}/{}/".format(
+        self.downloadquote_url = "{}/{}/{}/{}".format(
             self.api_url, "iquotes", "{quote_id}", "{download_type}"
         )
 
@@ -121,3 +121,10 @@ class UltimateMCuleRoutes:
         """
         self._base_url = value
         self._update_routes()
+
+
+data = {
+    "amount": 1,
+    "delivery_country": "UK",
+    "mcule_ids": ["MCULE-8566444437", "MCULE-3652295432"],
+}
