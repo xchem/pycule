@@ -99,8 +99,8 @@ class UltimateMCuleRoutes:
         self.quoterequest_url = "{}/{}/".format(self.api_url, "iquote-queries")
         self.quotestatus_url = "{}/{}/{}/".format(self.api_url, "iquote-queries", "{quote_id}")
         self.detailedquote_url = "{}/{}/{}/".format(self.api_url, "iquotes", "{quote_id}")
-        self.downloadquote_url = "{}/{}/{}/{}{}/".format(
-            self.api_url, "iquotes", "{quote_id}", "download-", "{file_type}"
+        self.downloadquote_url = "{}/{}/{}/{}/".format(
+            self.api_url, "iquotes", "{quote_id}", "{file_type}"
         )
 
     @property
@@ -121,10 +121,3 @@ class UltimateMCuleRoutes:
         """
         self._base_url = value
         self._update_routes()
-
-
-data = {
-    "amount": 1,
-    "delivery_country": "UK",
-    "mcule_ids": ["MCULE-8566444437", "MCULE-3652295432"],
-}

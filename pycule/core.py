@@ -255,29 +255,10 @@ class MCuleWrapper:
 
     # Chcked all is working and good up unil here - getting a 400 validation error...
     # for quote request
-    @response_handling(success_status_code=200, on_success=default_on_success)
+    @response_handling(success_status_code=201, on_success=default_on_success)
     @mcule_api_limits
     def quoterequest(
-        self,
-        mcule_ids: list,
-        customer_first_name: str,
-        customer_last_name: str,
-        delivery_country: str,
-        amount: int = 1,
-        min_amount: int = None,
-        target_volume: int = None,
-        target_cc: int = None,
-        extra_amount: int = None,
-        min_extra_amount: int = None,
-        customer_email: str = None,
-        delivery_time: int = None,
-        purity: int = None,
-        higher_amouts: int = None,
-        item_filters: dict = None,
-        keep_original_salt_form: bool = False,
-        keep_original_tautomer_form: bool = False,
-        keep_original_stereo_form: bool = False,
-        deliver_multiple_salt_forms: bool = False,
+        self, mcule_ids: list, delivery_country: str = "GB", amount: int = 1, **optional_args
     ) -> requests.models.Response:
         """
         Substructure search of MCule for a compound
@@ -285,13 +266,15 @@ class MCuleWrapper:
         Args:
             Mandatory fields:
             mcule_ids: List of mcule IDs of structures you want get a quote for.
+            delivery_country: ISO 3166-1 alpha-2 code of the delivery country. Defaults to GB
+            amount: The amount or target concentration-volume pair (target_volume and target_cc) need to be specified. Defaults to 1
+
+            Semi-optional - depends on info stored in MCule account
             customer_first_name: The customer's first name. It does not need to be specified if the user's first name is specified on the Edit profile page on mcule.com.
             customer_last_name: The customer's last name. It does not need to be specified if the user's last name is specified on the Edit profile page on mcule.com.
-            delivery_country: ISO 3166-1 alpha-2 code of the delivery country.
-            amount: The amount or target concentration-volume pair (target_volume and target_cc) need to be specified.
+
 
             Optional fields:
-
             amount: Preferred amount per molecule (mg). (default: 1)
             min_amount: Acceptable minimum amount (mg). (default: null)
             target_volume: The target volume (in ml), in case of solution based amount.
@@ -315,27 +298,41 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
+        allowed_keywords = [
+            "item_filters",
+            "customer_first_name",
+            "customer_last_name",
+            "customer_email",
+            "min_amount",
+            "target_volume",
+            "target_cc",
+            "extra_amount",
+            "min_extra_amount",
+            "delivery_time",
+            "purity",
+            "higher_amouts",
+            "keep_original_salt_form",
+            "keep_original_tautomer_form",
+            "keep_original_stereo_form",
+            "deliver_multiple_salt_forms",
+        ]
+
+        optional_arguments = [
+            (keyword, value)
+            for keyword, value in zip(optional_args, optional_args.values())
+            if keyword in allowed_keywords
+        ]
+        optional_dict = dict(optional_arguments)
+
         data = {
             "mcule_ids": mcule_ids,
-            "customer_first_name": customer_first_name,
-            "customer_last_name": customer_last_name,
             "delivery_country": delivery_country,
             "amount": amount,
-            "min_amount": min_amount,
-            "target_volume": target_volume,
-            "target_cc": target_cc,
-            "extra_amount": extra_amount,
-            "min_extra_amount": min_extra_amount,
-            "customer_email": customer_email,
-            "delivery_time": delivery_time,
-            "purity": purity,
-            "higher_amouts": higher_amouts,
-            "item_filters": item_filters,
-            "keep_original_salt_form": keep_original_salt_form,
-            "keep_original_tautomer_form": keep_original_tautomer_form,
-            "keep_original_stereo_form": keep_original_stereo_form,
-            "deliver_multiple_salt_forms": deliver_multiple_salt_forms,
         }
+
+        if optional_dict:
+            data.update(optional_dict)
+
         response = requests.post(
             url=self.routes.quoterequest_url,
             headers=self.headers,
@@ -409,7 +406,6 @@ class MCuleWrapper:
             headers=self.headers,
             cookies={},
         )
-
         return response
 
     @response_handling(success_status_code=200, on_success=default_on_success)
@@ -428,32 +424,33 @@ class MCuleWrapper:
             headers=self.headers,
             cookies={},
         )
-
         return response
 
-    @response_handling(success_status_code=200, on_success=default_on_success)
-    @mcule_api_limits
-    def downloadquotepdf(
-        self, quote_id: str, download_type: str = "download-pd"
-    ) -> requests.models.Response:
-        """
-        Download .pdf of quote
+    # Need to figure this out still but for now, it's ggod to go
+    # @response_handling(success_status_code=200, on_success=default_on_success)
+    # @mcule_api_limits
+    # def downloadquote(
+    #     self, quote_id: str, download_type: str = "download-pd"
+    # ) -> requests.models.Response:
+    #     """
+    #     Download .pdf of quote
 
-        Args:
-            quote_id (str): Mcule quote ID
-            download_type: Can be either use 'download-pdf' or
-                          'download-excel'. If no download_type
-                           specified then 'donwload-pdf' used
-        Returns:
-            dict: dictionary containing the search response
-        """
-        response = requests.get(
-            url=self.downloadquote_url.format(quote_id=quote_id, download_type=download_type),
-            headers=self.headers,
-            cookies={},
-        )
-
-        return response
+    #     Args:
+    #         quote_id (str): Mcule quote ID
+    #         download_type: Can be either use 'download-pdf' or
+    #                       'download-excel'. If no download_type
+    #                        specified then 'donwload-pdf' used
+    #     Returns:
+    #         dict: dictionary containing the search response
+    #     """
+    #     response = requests.get(
+    #         url=self.routes.downloadquote_url.format(
+    #             quote_id=quote_id, download_type=download_type
+    #         ),
+    #         headers=self.headers,
+    #         cookies={},
+    #     )
+    #     return response
 
 
 class UltimateMCuleWrapper:
