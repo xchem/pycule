@@ -6,9 +6,9 @@ import requests
 import json
 from typing import Optional
 
-from urls import MCuleRoutes, UltimateMCuleRoutes
-from callbacks import default_on_success
-from decorators import mcule_api_limits, response_handling
+from .urls import MCuleRoutes, UltimateMCuleRoutes
+from .callbacks import default_on_success
+from .decorators import mcule_api_limits, response_handling
 
 LOGGER = logging.getLogger("mcule:core")
 
