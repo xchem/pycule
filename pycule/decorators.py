@@ -5,6 +5,7 @@ import logging
 import threading
 from typing import Optional, Callable
 from functools import wraps, partial
+from ratelimit import limits, sleep_and_retry
 
 from .callbacks import default_on_success
 
@@ -40,6 +41,8 @@ def mcule_api_limits(function: Callable) -> Callable:
         Callable: a function wrapped with the decorator.
     """
 
+    @sleep_and_retry
+    @limits(calls=MAXIMUM_REQUESTS_PER_DAY, period=86400)
     def _too_many_requests():
         raise RequestsPerMinuteExceeded(
             "Too many requests per minute. Maximum supported: {}".format(
@@ -47,6 +50,8 @@ def mcule_api_limits(function: Callable) -> Callable:
             )
         )
 
+    @sleep_and_retry
+    @limits(calls=MAXIMUM_REQUESTS_PER_MINUTE, period=60)
     def _too_frequent_requests():
         raise RequestTimeoutNotElapsed(
             "Too frequent requests. Wait at least {}s ".format(MININUM_TIMEOUT_BETWEEN_REQUESTS)
