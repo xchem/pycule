@@ -212,16 +212,24 @@ class MCuleWrapper:
 
     @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
-    def similaritysearch(self, query: str) -> requests.models.Response:
+    def similaritysearch(
+        self, query: str, limit: int = 3, threshold: float = 0.8
+    ) -> requests.models.Response:
         """
         Similarity search of MCule for a compound
 
         Args:
             query (str): Mcule ID or SMILES
+            limit (int): Maximum number of matches found, Default 3
+            threshold (float): Similarity threshold. Default 0.8
         Returns:
             dict: dictionary containing the search response
         """
-        data = {"query": query}
+        data = {
+            "query": query,
+            "limit": limit,
+            "threshold": threshold,
+        }
         response = requests.post(
             url=self.routes.similaritysearch_url,
             headers=self.headers,

@@ -1,8 +1,6 @@
 """Decorators for Mcule API."""
 from __future__ import absolute_import, division, print_function, unicode_literals
-import time
 import logging
-import threading
 from typing import Optional, Callable
 from functools import wraps, partial
 from ratelimit import limits, sleep_and_retry
@@ -12,9 +10,6 @@ from .callbacks import default_on_success
 LOGGER = logging.getLogger("mcule:decorators")
 MAXIMUM_REQUESTS_PER_MINUTE = 100
 MAXIMUM_REQUESTS_PER_DAY = 1000
-MININUM_TIMEOUT_BETWEEN_REQUESTS = 1e-5  # expressed in seconds
-LAST_REQUEST_TIME = int(time.time()) - 86400  # added a one day offset
-REQUEST_COUNT = 0
 
 
 class RequestsPerMinuteExceeded(RuntimeError):
@@ -51,48 +46,11 @@ def mcule_api_limits(function: Callable) -> Callable:
     def _check_too_frequent_requests():
         return
 
-    # def _too_many_requests():
-    #     raise RequestsPerMinuteExceeded(
-    #         "Too many requests per minute. Maximum supported: {}".format(
-    #             MAXIMUM_REQUESTS_PER_MINUTE
-    #         )
-    #     )
-
-    # @sleep_and_retry
-    # @limits(calls=MAXIMUM_REQUESTS_PER_MINUTE, period=60)
-    # def _too_frequent_requests():
-    #     raise RequestTimeoutNotElapsed(
-    #         "Too frequent requests. Wait at least {}s ".format(MININUM_TIMEOUT_BETWEEN_REQUESTS)
-    #         + "between consecutive requests to the API"
-    #     )
-
     @wraps(function)
     def _wrapper(*args, **kwargs):
-        # global LAST_REQUEST_TIME
-        # global REQUEST_COUNT
-        # current_request_time = time.time()
-        # # test frequency
-        # if (current_request_time - LAST_REQUEST_TIME) < MININUM_TIMEOUT_BETWEEN_REQUESTS:
-        #     _too_frequent_requests()
-        # # optionally reset request count.
-        # if (current_request_time - LAST_REQUEST_TIME) >= 60:  # more than on minute passed
-        #     request_count_lock = threading.Lock()
-        #     with request_count_lock:
-        #         REQUEST_COUNT = 0
-        # if REQUEST_COUNT >= MAXIMUM_REQUESTS_PER_MINUTE:
-        #     _too_many_requests()
-        # perform the function call
         _check_too_many_requests()
         _check_too_frequent_requests()
         result = function(*args, **kwargs)
-        # update last request time
-        # last_request_time_lock = threading.Lock()
-        # with last_request_time_lock:
-        #     LAST_REQUEST_TIME = current_request_time
-        # # update count
-        # request_count_lock = threading.Lock()
-        # with request_count_lock:
-        #     REQUEST_COUNT += 1
         return result
 
     return _wrapper
