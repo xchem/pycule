@@ -170,6 +170,27 @@ class MCuleWrapper:
 
     @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
+    def compoundpricesamount(self, mcule_id: str, amount: float = 10) -> requests.models.Response:
+        """
+        Get compound prices from Mcule
+
+        Args:
+            mcule_id (str): Mcule compound ID
+            amount (float): Amount required
+        Returns:
+            dict: dictionary containing the search response
+        """
+
+        response = requests.get(
+            url=self.routes.compoundpricessetamount_url.format(mcule_id=mcule_id, amount=amount),
+            headers=self.headers,
+            cookies={},
+        )
+
+        return response
+
+    @response_handling(success_status_code=200, on_success=default_on_success)
+    @mcule_api_limits
     def multiplequeriessearch(self, queries: list) -> requests.models.Response:
         """
         Exact search of MCule fro multiple queries

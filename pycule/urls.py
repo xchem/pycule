@@ -34,6 +34,14 @@ class MCuleRoutes:
         self.compoundprices_url = "{}/{}/{}/{}".format(
             self.api_url, "compound", "{mcule_id}", "prices"
         )
+        self.compoundpricessetamount_url = "{}/{}/{}/{}/{}{}".format(
+            self.api_url,
+            "compound",
+            "{mcule_id}",
+            "prices",
+            "?amounts=",
+            "{amount}",
+        )
         self.multiplequeries_url = "{}/{}/{}/".format(self.api_url, "search", "exact")
         self.multiplequerieswithavailability_url = "{}/{}/{}/{}/".format(
             self.api_url, "search", "exact", "availability"
