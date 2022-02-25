@@ -29,7 +29,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT",
     install_requires=[
-        "requests==2.23.0",
+        "requests==2.24.0",
         "ratelimit==2.2.1",
     ],
     packages=find_packages(),
