@@ -33,7 +33,7 @@ setup(
         "ratelimit>=2.2.1",
     ],
     packages=find_packages(),
-    url="https://github.com/Waztom/pycule",
+    url="https://github.com/xchem/pycule.git",
     classifiers=[
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
