@@ -5,11 +5,166 @@ import requests
 import json
 from typing import Optional
 
-from .urls import MCuleRoutes, UltimateMCuleRoutes
+from .urls import EnamineRoutes, MCuleRoutes, UltimateMCuleRoutes
 from .callbacks import default_on_success
-from .decorators import mcule_api_limits, response_handling
+from .decorators import enamine_api_limits, mcule_api_limits, response_handling
 
 LOGGER = logging.getLogger("mcule:core")
+
+
+class EnamineWrapper:
+    """
+    Python wrapper for Enamine API wrapper to access the API requests.
+    """
+
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        logger: Optional[logging.Logger] = None,
+        base_url: Optional[str] = None,
+    ):
+        """
+        EnamineWrapper constructor.
+        Args:
+
+            username (str): Username on Enaminestore.
+            password (str): Password on Enaminestore.
+            logger (logging.Logger, optional): a logger.
+                Defaults to None, a.k.a using a default logger.
+            base_url (str, optional): base url for the service. If not provided it will default to
+                the environment variable ENAMINE_BASE_URL or https://www.enaminestore.com/api
+        """
+        self._username = username
+        self._password = password
+        self.logger = logger if logger else LOGGER
+        self.headers = self._construct_headers()
+        self.routes = EnamineRoutes(base_url)
+
+    def set_base_url(self, base_url: str) -> None:
+        """
+        Set base url for the Enamine service.
+        Args:
+            base_url (str): base url for the service to set.
+        """
+        self.routes.base_url = base_url
+
+    def _construct_headers(self) -> dict:
+        """
+        Construct header, required for all requests.
+        Returns:
+            dict: dictionary containing the "Content-Type" and the
+                  "Authorization".
+        """
+        return {
+            "Authorization": "login={}, pass={}".format(self._username, self._password),
+        }
+
+    @response_handling(success_status_code=200, on_success=default_on_success)
+    @enamine_api_limits
+    def compoundidsearch(
+        self, compound_id: str, currency: str = "USD", catalogue: str = "BB"
+    ) -> requests.models.Response:
+        """
+        This search returns information about queried compound and all available stereoisomers or salts of it.
+
+        Args:
+            code (str): Required -  the compound ID
+            currency (str):  Required -  set to “USD”. Available values: "USD" and "EUR"
+            mode (str): Optional (default is "BB"). Available values: "BB", "SCR", "REAL"
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {
+            "code": compound_id,
+            "currency": currency,
+            "mode": catalogue,
+        }
+        response = requests.get(
+            url=self.routes.base_url, params=data, headers=self.headers, cookies={}
+        )
+        return response
+
+    @response_handling(success_status_code=200, on_success=default_on_success)
+    @enamine_api_limits
+    def substructuresearch(
+        self, smiles: str, currency: str = "USD", catalogue: str = "BB"
+    ) -> requests.models.Response:
+        """
+        This search returns the substructure search results for the queried compound.
+
+        Args:
+            code (str): Required -  the SMILES to search for
+            currency (str):  Required -  set to “USD”. Available values: "USD" and "EUR"
+            mode (str): Optional (default is "BB"). Available values: "BB", "SCR", "REAL"
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {
+            "code": "search_{}_sub".format(smiles),
+            "currency": currency,
+            "mode": catalogue,
+        }
+        response = requests.get(
+            url=self.routes.base_url, params=data, headers=self.headers, cookies={}
+        )
+        return response
+
+    @response_handling(success_status_code=200, on_success=default_on_success)
+    @enamine_api_limits
+    def similaritysearch(
+        self,
+        smiles: str,
+        currency: str = "USD",
+        similarity_value: float = 0.8,
+        catalogue: str = "BB",
+    ) -> requests.models.Response:
+        """
+        This search returns the similarity search results for the queried compound.
+
+        Args:
+            code (str): Required -  the SMILES to search for
+            currency (str):  Required -  set to “USD”. Available values: "USD" and "EUR"
+            similarity_value (float):  Optional - default is 0.8. Similarity value used in similarity search.
+            mode (str): Optional (default is "BB"). Available values: "BB", "SCR", "REAL"
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {
+            "code": "search_{}_sim".format(smiles),
+            "currency": currency,
+            "sim": similarity_value,
+            "mode": catalogue,
+        }
+        response = requests.get(
+            url=self.routes.base_url, params=data, headers=self.headers, cookies={}
+        )
+        return response
+
+    @response_handling(success_status_code=200, on_success=default_on_success)
+    @enamine_api_limits
+    def exactsearch(
+        self, smiles: str, currency: str = "USD", catalogue: str = "BB"
+    ) -> requests.models.Response:
+        """
+        This search returns the exact match search results for the queried compound.
+
+        Args:
+            code (str): Required -  the SMILES to search for
+            currency (str):  Required -  set to “USD”. Available values: "USD" and "EUR"
+            mode (str): Optional (default is "BB"). Available values: "BB", "SCR", "REAL"
+        Returns:
+            dict: dictionary containing the search response
+        """
+        data = {
+            "code": "search_{}_exact".format(smiles),
+            "currency": currency,
+            "mode": catalogue,
+        }
+        response = requests.get(
+            url=self.routes.base_url, params=data, headers=self.headers, cookies={}
+        )
+        return response
 
 
 class MCuleWrapper:
@@ -66,7 +221,9 @@ class MCuleWrapper:
         Returns:
             dict: dictionary containing the search response
         """
-        response = requests.get(url=self.routes.database_url, headers=self.headers, cookies={})
+        response = requests.get(
+            url=self.routes.database_url, headers=self.headers, cookies={}
+        )
         return response
 
     @response_handling(success_status_code=200, on_success=default_on_success)
@@ -170,7 +327,9 @@ class MCuleWrapper:
 
     @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
-    def compoundpricesamount(self, mcule_id: str, amount: float = 10) -> requests.models.Response:
+    def compoundpricesamount(
+        self, mcule_id: str, amount: float = 10
+    ) -> requests.models.Response:
         """
         Get compound prices from Mcule
 
@@ -182,7 +341,9 @@ class MCuleWrapper:
         """
 
         response = requests.get(
-            url=self.routes.compoundpricessetamount_url.format(mcule_id=mcule_id, amount=amount),
+            url=self.routes.compoundpricessetamount_url.format(
+                mcule_id=mcule_id, amount=amount
+            ),
             headers=self.headers,
             cookies={},
         )
@@ -212,7 +373,9 @@ class MCuleWrapper:
 
     @response_handling(success_status_code=200, on_success=default_on_success)
     @mcule_api_limits
-    def multiplequerieswithavailability(self, queries: list) -> requests.models.Response:
+    def multiplequerieswithavailability(
+        self, queries: list
+    ) -> requests.models.Response:
         """
         Exact search of MCule for multiple queries and availability
 
@@ -286,7 +449,11 @@ class MCuleWrapper:
     @response_handling(success_status_code=201, on_success=default_on_success)
     @mcule_api_limits
     def quoterequest(
-        self, mcule_ids: list, delivery_country: str = "GB", amount: int = 1, **optional_args
+        self,
+        mcule_ids: list,
+        delivery_country: str = "GB",
+        amount: int = 1,
+        **optional_args
     ) -> requests.models.Response:
         """
         Substructure search of MCule for a compound
@@ -521,7 +688,10 @@ class UltimateMCuleWrapper:
             dict: dictionary containing the "Content-Type" and the
                 "Authorization".
         """
-        return {"Content-Type": "application/json", "Authorization": self._authorisation_token}
+        return {
+            "Content-Type": "application/json",
+            "Authorization": self._authorisation_token,
+        }
 
     @response_handling(success_status_code=201, on_success=default_on_success)
     @mcule_api_limits
@@ -538,7 +708,10 @@ class UltimateMCuleWrapper:
         """
         data = {"query": {"type": "exact", "queries": [smiles]}}
         response = requests.post(
-            url=self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.search_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
         return response
 
@@ -568,7 +741,10 @@ class UltimateMCuleWrapper:
             }
         }
         response = requests.post(
-            url=self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.search_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
         return response
 
@@ -587,14 +763,21 @@ class UltimateMCuleWrapper:
         """
         data = {"query": {"type": "sss", "query": smiles, "limit": limit}}
         response = requests.post(
-            url=self.routes.search_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.search_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
         return response
 
     @response_handling(success_status_code=201, on_success=default_on_success)
     @mcule_api_limits
     def price_search_single(
-        self, inchi_keys: list, amount: int = 1, currency: str = "USD", individual: bool = False
+        self,
+        inchi_keys: list,
+        amount: int = 1,
+        currency: str = "USD",
+        individual: bool = False,
     ) -> requests.models.Response:
         """
         Searche Mcule for prices of compounds using a single amount for all
@@ -624,7 +807,10 @@ class UltimateMCuleWrapper:
             "individual": individual,
         }
         response = requests.post(
-            url=self.routes.pricing_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.pricing_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
 
         return response
@@ -632,7 +818,11 @@ class UltimateMCuleWrapper:
     @response_handling(success_status_code=201, on_success=default_on_success)
     @mcule_api_limits
     def price_search_multi(
-        self, inchi_keys: list, amounts: list, currency: str = "USD", individual: bool = False
+        self,
+        inchi_keys: list,
+        amounts: list,
+        currency: str = "USD",
+        individual: bool = False,
     ) -> requests.models.Response:
         """
         Searche Mcule for prices of compounds setting different amounts for
@@ -655,7 +845,8 @@ class UltimateMCuleWrapper:
             dict: dictionary containing the search response
         """
         compounds = [
-            {"inchi_key": inchi, "amount": amount} for inchi, amount in zip(inchi_keys, amounts)
+            {"inchi_key": inchi, "amount": amount}
+            for inchi, amount in zip(inchi_keys, amounts)
         ]
         data = {
             "compounds": compounds,
@@ -663,7 +854,10 @@ class UltimateMCuleWrapper:
             "individual": individual,
         }
         response = requests.post(
-            url=self.routes.pricing_url, headers=self.headers, data=json.dumps(data), cookies={}
+            url=self.routes.pricing_url,
+            headers=self.headers,
+            data=json.dumps(data),
+            cookies={},
         )
 
         return response
@@ -707,7 +901,8 @@ class UltimateMCuleWrapper:
             dict: dictionary containing the search response
         """
         compounds = [
-            {"inchi_key": inchi, "amount": amount} for inchi, amount in zip(inchi_keys, amounts)
+            {"inchi_key": inchi, "amount": amount}
+            for inchi, amount in zip(inchi_keys, amounts)
         ]
         data = {
             "compounds": compounds,
@@ -766,7 +961,8 @@ class UltimateMCuleWrapper:
             dict: dictionary containing the search response
         """
         compounds = [
-            {"inchi_key": inchi, "amount": amount} for inchi, amount in zip(inchi_keys, amounts)
+            {"inchi_key": inchi, "amount": amount}
+            for inchi, amount in zip(inchi_keys, amounts)
         ]
         data = {
             "compounds": compounds,
@@ -802,7 +998,8 @@ class UltimateMCuleWrapper:
         """
 
         response = requests.get(
-            url=self.routes.quotestatus_url.format(quote_id=quote_id), headers=self.headers
+            url=self.routes.quotestatus_url.format(quote_id=quote_id),
+            headers=self.headers,
         )
 
         return response
@@ -823,7 +1020,8 @@ class UltimateMCuleWrapper:
             dict: dictionary containing the search response
         """
         response = requests.get(
-            url=self.routes.detailedquote_url.format(quote_id=quote_id), headers=self.headers
+            url=self.routes.detailedquote_url.format(quote_id=quote_id),
+            headers=self.headers,
         )
 
         return response
@@ -846,7 +1044,9 @@ class UltimateMCuleWrapper:
             file: returns either a .pdf or .xlsx file
         """
         response = requests.get(
-            url=self.routes.downloadquote_url.format(quote_id=quote_id, file_type=file_type),
+            url=self.routes.downloadquote_url.format(
+                quote_id=quote_id, file_type=file_type
+            ),
             headers=self.headers,
         )
 
